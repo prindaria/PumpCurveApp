@@ -28,8 +28,6 @@ jobs:
       - name: Install Android SDK components
         run: |
           sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
-          echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
-          echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> $GITHUB_ENV
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
@@ -37,10 +35,8 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Build Debug APK with verbose output
-        run: ./gradlew assembleDebug --stacktrace --info
-        env:
-          ANDROID_HOME: ${{ env.ANDROID_HOME }}
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug --stacktrace
 
       - name: Upload Debug APK
         if: always()
@@ -49,22 +45,3 @@ jobs:
           name: PumpCurveApp-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: warn
-
-      - name: Build Release APK (signed)
-        if: github.event_name == 'workflow_dispatch'
-        run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > app/release-keystore.jks
-          ./gradlew assembleRelease \
-            -Pandroid.injected.signing.store.file=release-keystore.jks \
-            -Pandroid.injected.signing.store.password="${{ secrets.KEYSTORE_PASSWORD }}" \
-            -Pandroid.injected.signing.key.alias="${{ secrets.KEY_ALIAS }}" \
-            -Pandroid.injected.signing.key.password="${{ secrets.KEY_PASSWORD }}"
-        env:
-          ANDROID_HOME: ${{ env.ANDROID_HOME }}
-
-      - name: Upload Release APK
-        if: github.event_name == 'workflow_dispatch'
-        uses: actions/upload-artifact@v4
-        with:
-          name: PumpCurveApp-release-apk
-          path: app/build/outputs/apk/release/app-release-unsigned.apk
