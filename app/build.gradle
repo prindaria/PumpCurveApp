@@ -16,7 +16,9 @@ android {
     }
 
     buildTypes {
-        debug { debuggable true }
+        debug {
+            debuggable true
+        }
         release {
             debuggable false
             minifyEnabled false
@@ -33,7 +35,9 @@ android {
     }
 
     sourceSets {
-        assets.srcDirs = ['src/main/assets']
+        main {
+            assets.srcDirs = ['src/main/assets']
+        }
     }
 }
 
