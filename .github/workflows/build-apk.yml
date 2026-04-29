@@ -19,6 +19,11 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.5'
+
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
@@ -29,21 +34,14 @@ jobs:
         run: |
           sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
 
-      - name: Show directory structure
+      - name: Show gradle files
         run: |
-          find . -type f -name "*.gradle" -o -name "*.properties" | head -20
-
-      - name: Show root build.gradle
-        run: cat build.gradle
-
-      - name: Show app/build.gradle
-        run: cat app/build.gradle
+          echo "=== Root build.gradle ===" && cat build.gradle
+          echo "=== App build.gradle ===" && cat app/build.gradle
+          echo "=== Settings.gradle ===" && cat settings.gradle
 
       - name: Build Debug APK
-        run: ./gradlew assembleDebug --stacktrace 2>&1
-        working-directory: .
-        env:
-          ANDROID_HOME: ${{ env.ANDROID_HOME }}
+        run: gradle assembleDebug --stacktrace --no-daemon
 
       - name: Upload Debug APK
         if: always()
