@@ -263,28 +263,33 @@ class MainActivity : AppCompatActivity() {
 
             val entries = mutableListOf<Entry>()
             for (point in sortedPoints) {
-                var x = point.pressure.toFloat()  // Torr
-                var y = point.pumpingSpeed.toFloat() // L/min
+                // 原始数据（Torr, L/min）
+                val xTorr = point.pressure  // Torr
+                val yLmin = point.pumpingSpeed // L/min
 
-                // 单位转换（转回当前单位显示）
-                x = (x * currentXUnit.toTorr.toFloat()).toFloat()
-                y = (y * currentYUnit.toLmin.toFloat()).toFloat()
+                // 过滤范围（用 Torr/L/min 比较）
+                if (pressureMinTorr != null && xTorr < pressureMinTorr) continue
+                if (pressureMaxTorr != null && xTorr > pressureMaxTorr) continue
+                if (speedMinLmin != null && yLmin < speedMinLmin) continue
+                if (speedMaxLmin != null && yLmin > speedMaxLmin) continue
 
-                // 过滤范围
-                if (pressureMinTorr != null && x < pressureMinTorr) continue
-                if (pressureMaxTorr != null && x > pressureMaxTorr) continue
-                if (speedMinLmin != null && y < speedMinLmin) continue
-                if (speedMaxLmin != null && y > speedMaxLmin) continue
+                // 转换到显示单位
+                // toTorr 含义：1 个该单位 = toTorr 个 Torr
+                // 所以：该单位 = Torr / toTorr
+                val xDisplay = (xTorr / currentXUnit.toTorr).toFloat()
+                val yDisplay = (yLmin / currentYUnit.toLmin).toFloat()
 
                 // 对数坐标转换
-                if (useLogX && x > 0) {
-                    x = log10(x.toDouble()).toFloat()
+                var finalX = xDisplay
+                var finalY = yDisplay
+                if (useLogX && finalX > 0) {
+                    finalX = log10(finalX.toDouble()).toFloat()
                 }
-                if (useLogY && y > 0) {
-                    y = log10(y.toDouble()).toFloat()
+                if (useLogY && finalY > 0) {
+                    finalY = log10(finalY.toDouble()).toFloat()
                 }
 
-                entries.add(Entry(x, y))
+                entries.add(Entry(finalX, finalY))
             }
 
             if (entries.isNotEmpty()) {
