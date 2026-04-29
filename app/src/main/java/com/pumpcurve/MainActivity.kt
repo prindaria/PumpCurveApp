@@ -21,6 +21,7 @@ import java.io.*
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.log10
+import kotlin.math.pow
 
 class MainActivity : AppCompatActivity() {
 
