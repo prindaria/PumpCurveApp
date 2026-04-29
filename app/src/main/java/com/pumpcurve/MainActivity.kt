@@ -28,16 +28,38 @@ class MainActivity : AppCompatActivity() {
     private lateinit var pumpSelectionContainer: LinearLayout
     private lateinit var etPressureMin: EditText
     private lateinit var etPressureMax: EditText
+    private lateinit var etSpeedMin: EditText
+    private lateinit var etSpeedMax: EditText
+    private lateinit var spinnerXUnit: Spinner
+    private lateinit var spinnerYUnit: Spinner
     private lateinit var cbLogX: CheckBox
     private lateinit var cbLogY: CheckBox
     private lateinit var btnPlot: Button
     private lateinit var btnClear: Button
     private lateinit var btnExport: Button
     private lateinit var tvDataInfo: TextView
+    private lateinit var etSearch: EditText
+
+    // 单位枚举
+    enum class PressureUnit(val displayName: String, val toTorr: Double) {
+        TORR("Torr", 1.0),
+        PA("Pa", 1.0 / 133.322),      // 1 Pa = 1/133.322 Torr
+        MBAR("mbar", 1.0 / 1.33322)   // 1 mbar = 1/1.33322 Torr
+    }
+
+    enum class SpeedUnit(val displayName: String, val toLmin: Double) {
+        LMIN("L/min", 1.0),
+        M3H("m³/h", 1.0 / 60.0)       // 1 m³/h = 1/60 L/min
+    }
 
     // 数据结构：Map<泵型号, List<数据点>>
     private var pumpData: Map<String, List<PumpDataPoint>> = emptyMap()
     private val pumpCheckBoxes = mutableMapOf<String, CheckBox>()
+    private var allPumpModels: List<String> = emptyList()
+
+    // 当前选择的单位
+    private var currentXUnit = PressureUnit.TORR
+    private var currentYUnit = SpeedUnit.LMIN
 
     // 颜色列表，用于不同泵型号的曲线
     private val colors = listOf(
@@ -51,8 +73,8 @@ class MainActivity : AppCompatActivity() {
 
     data class PumpDataPoint(
         val pumpModel: String,
-        val pressure: Double,    // Torr
-        val pumpingSpeed: Double  // L/min
+        val pressure: Double,    // Torr (原始数据)
+        val pumpingSpeed: Double  // L/min (原始数据)
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -60,10 +82,12 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         initViews()
+        setupSpinners()
         loadDataFromCSV()
         setupChart()
         setupListeners()
         updateDataInfo()
+        displayPumpModels("") // 初始显示所有型号
     }
 
     private fun initViews() {
@@ -71,12 +95,39 @@ class MainActivity : AppCompatActivity() {
         pumpSelectionContainer = findViewById(R.id.pumpSelectionContainer)
         etPressureMin = findViewById(R.id.etPressureMin)
         etPressureMax = findViewById(R.id.etPressureMax)
+        etSpeedMin = findViewById(R.id.etSpeedMin)
+        etSpeedMax = findViewById(R.id.etSpeedMax)
+        spinnerXUnit = findViewById(R.id.spinnerXUnit)
+        spinnerYUnit = findViewById(R.id.spinnerYUnit)
         cbLogX = findViewById(R.id.cbLogX)
         cbLogY = findViewById(R.id.cbLogY)
         btnPlot = findViewById(R.id.btnPlot)
         btnClear = findViewById(R.id.btnClear)
         btnExport = findViewById(R.id.btnExport)
         tvDataInfo = findViewById(R.id.tvDataInfo)
+        etSearch = findViewById(R.id.etSearch)
+    }
+
+    private fun setupSpinners() {
+        // X轴单位
+        val xUnits = PressureUnit.values().map { it.displayName }
+        spinnerXUnit.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, xUnits)
+        spinnerXUnit.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
+                currentXUnit = PressureUnit.values()[position]
+            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+
+        // Y轴单位
+        val yUnits = SpeedUnit.values().map { it.displayName }
+        spinnerYUnit.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, yUnits)
+        spinnerYUnit.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
+                currentYUnit = SpeedUnit.values()[position]
+            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
     }
 
     private fun loadDataFromCSV() {
@@ -105,43 +156,10 @@ class MainActivity : AppCompatActivity() {
 
             // 按泵型号分组
             pumpData = dataPoints.groupBy { it.pumpModel }
-            createPumpCheckBoxes()
+            allPumpModels = pumpData.keys.sorted()
 
         } catch (e: Exception) {
             Toast.makeText(this, "加载CSV数据失败: ${e.message}", Toast.LENGTH_LONG).show()
-        }
-    }
-
-    private fun createPumpCheckBoxes() {
-        pumpSelectionContainer.removeAllViews()
-        pumpCheckBoxes.clear()
-
-        // 排序泵型号
-        val sortedModels = pumpData.keys.sorted()
-
-        // 限制显示数量（太多会卡顿）
-        val maxDisplay = 30
-        val displayModels = if (sortedModels.size > maxDisplay) {
-            sortedModels.subList(0, maxDisplay)
-        } else {
-            sortedModels
-        }
-
-        for (model in displayModels) {
-            val checkBox = CheckBox(this)
-            checkBox.text = model
-            checkBox.textSize = 11f
-            checkBox.setLines(1)
-            pumpCheckBoxes[model] = checkBox
-            pumpSelectionContainer.addView(checkBox)
-        }
-
-        if (sortedModels.size > maxDisplay) {
-            val infoText = TextView(this)
-            infoText.text = "(仅显示前${maxDisplay}个型号，共${sortedModels.size}个)"
-            infoText.textSize = 10f
-            infoText.setTextColor(Color.GRAY)
-            pumpSelectionContainer.addView(infoText)
         }
     }
 
@@ -170,12 +188,49 @@ class MainActivity : AppCompatActivity() {
 
         cbLogX.setOnCheckedChangeListener { _, _ -> updateAxisScale() }
         cbLogY.setOnCheckedChangeListener { _, _ -> updateAxisScale() }
+
+        // 搜索框文字变化监听
+        etSearch.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                displayPumpModels(s?.toString() ?: "")
+            }
+            override fun afterTextChanged(s: android.text.Editable?) {}
+        })
     }
 
     private fun updateDataInfo() {
         val totalPoints = pumpData.values.sumOf { it.size }
         val pumpCount = pumpData.size
         tvDataInfo.text = "数据信息: $pumpCount 种泵型号, 共 $totalPoints 个数据点"
+    }
+
+    private fun displayPumpModels(keyword: String) {
+        pumpSelectionContainer.removeAllViews()
+        pumpCheckBoxes.clear()
+
+        val filtered = if (keyword.isEmpty()) {
+            allPumpModels
+        } else {
+            allPumpModels.filter { it.contains(keyword, ignoreCase = true) }
+        }
+
+        for (model in filtered) {
+            val checkBox = CheckBox(this)
+            checkBox.text = model
+            checkBox.textSize = 11f
+            checkBox.setLines(1)
+            pumpCheckBoxes[model] = checkBox
+            pumpSelectionContainer.addView(checkBox)
+        }
+
+        if (filtered.isEmpty()) {
+            val infoText = TextView(this)
+            infoText.text = "未找到匹配的型号"
+            infoText.textSize = 10f
+            infoText.setTextColor(Color.GRAY)
+            pumpSelectionContainer.addView(infoText)
+        }
     }
 
     private fun plotCurves() {
@@ -191,10 +246,11 @@ class MainActivity : AppCompatActivity() {
         var colorIndex = 0
         var hasData = false
 
-        val pressureMinText = etPressureMin.text.toString()
-        val pressureMaxText = etPressureMax.text.toString()
-        val pressureMin = pressureMinText.toDoubleOrNull() ?: 0.0
-        val pressureMax = pressureMaxText.toDoubleOrNull() ?: Double.MAX_VALUE
+        // 读取范围设置
+        val pressureMinTorr = parsePressure(etPressureMin.text.toString(), currentXUnit)
+        val pressureMaxTorr = parsePressure(etPressureMax.text.toString(), currentXUnit)
+        val speedMinLmin = parseSpeed(etSpeedMin.text.toString(), currentYUnit)
+        val speedMaxLmin = parseSpeed(etSpeedMax.text.toString(), currentYUnit)
 
         val useLogX = cbLogX.isChecked
         val useLogY = cbLogY.isChecked
@@ -207,11 +263,18 @@ class MainActivity : AppCompatActivity() {
 
             val entries = mutableListOf<Entry>()
             for (point in sortedPoints) {
-                var x = point.pressure.toFloat()
-                var y = point.pumpingSpeed.toFloat()
+                var x = point.pressure.toFloat()  // Torr
+                var y = point.pumpingSpeed.toFloat() // L/min
+
+                // 单位转换（转回当前单位显示）
+                x = (x * currentXUnit.toTorr.toFloat()).toFloat()
+                y = (y * currentYUnit.toLmin.toFloat()).toFloat()
 
                 // 过滤范围
-                if (x < pressureMin || x > pressureMax) continue
+                if (pressureMinTorr != null && x < pressureMinTorr) continue
+                if (pressureMaxTorr != null && x > pressureMaxTorr) continue
+                if (speedMinLmin != null && y < speedMinLmin) continue
+                if (speedMaxLmin != null && y > speedMaxLmin) continue
 
                 // 对数坐标转换
                 if (useLogX && x > 0) {
@@ -253,6 +316,18 @@ class MainActivity : AppCompatActivity() {
         Toast.makeText(this, "已绘制 ${selectedModels.size} 条曲线", Toast.LENGTH_SHORT).show()
     }
 
+    private fun parsePressure(text: String, unit: PressureUnit): Float? {
+        val value = text.toFloatOrNull() ?: return null
+        // 转换为 Torr
+        return (value / unit.toTorr).toFloat()
+    }
+
+    private fun parseSpeed(text: String, unit: SpeedUnit): Float? {
+        val value = text.toFloatOrNull() ?: return null
+        // 转换为 L/min
+        return (value / unit.toLmin).toFloat()
+    }
+
     private fun updateAxisScale() {
         // 当对数坐标切换时，重新绘制
         if (chart.data != null && chart.data!!.dataSetCount > 0) {
@@ -264,32 +339,50 @@ class MainActivity : AppCompatActivity() {
         val useLogX = cbLogX.isChecked
         val useLogY = cbLogY.isChecked
 
+        // X轴标签：正常计数法
         if (useLogX) {
             chart.xAxis.valueFormatter = object : ValueFormatter() {
                 override fun getAxisLabel(value: Float, axis: AxisBase?): String {
-                    return "10^${value.toInt()}"
+                    val original = 10.0.pow(value.toDouble())
+                    return formatNumber(original)
                 }
             }
         } else {
             chart.xAxis.valueFormatter = object : ValueFormatter() {
                 override fun getAxisLabel(value: Float, axis: AxisBase?): String {
-                    return "%.1f".format(value)
+                    return formatNumber(value.toDouble())
                 }
             }
         }
 
+        // Y轴标签：正常计数法
         if (useLogY) {
             chart.axisLeft.valueFormatter = object : ValueFormatter() {
                 override fun getAxisLabel(value: Float, axis: AxisBase?): String {
-                    return "10^${value.toInt()}"
+                    val original = 10.0.pow(value.toDouble())
+                    return formatNumber(original)
                 }
             }
         } else {
             chart.axisLeft.valueFormatter = object : ValueFormatter() {
                 override fun getAxisLabel(value: Float, axis: AxisBase?): String {
-                    return "%.0f".format(value)
+                    return formatNumber(value.toDouble())
                 }
             }
+        }
+
+        // 更新轴单位标签
+        chart.xAxis.labelRotationAngle = 0f
+    }
+
+    // 正常计数法格式化（不用科学计数法）
+    private fun formatNumber(value: Double): String {
+        return when {
+            value >= 1_000_000 -> "%.0f".format(value)
+            value >= 1_000 -> "%.0f".format(value)
+            value >= 1 -> "%.1f".format(value)
+            value >= 0.001 -> "%.4f".format(value)
+            else -> "%.6f".format(value)
         }
     }
 
@@ -299,6 +392,9 @@ class MainActivity : AppCompatActivity() {
         pumpCheckBoxes.forEach { it.value.isChecked = false }
         etPressureMin.text.clear()
         etPressureMax.text.clear()
+        etSpeedMin.text.clear()
+        etSpeedMax.text.clear()
+        etSearch.text.clear()
         Toast.makeText(this, "已清空", Toast.LENGTH_SHORT).show()
     }
 

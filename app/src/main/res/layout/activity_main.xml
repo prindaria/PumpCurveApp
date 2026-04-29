@@ -14,7 +14,7 @@
         android:textSize="18sp"
         android:textStyle="bold"
         android:layout_gravity="center"
-        android:layout_marginBottom="8dp" />
+        android:layout_marginBottom="4dp" />
 
     <!-- 数据信息 -->
     <TextView
@@ -26,13 +26,13 @@
         android:padding="4dp"
         android:background="#F0F0F0" />
 
-    <!-- X轴范围设置 -->
+    <!-- X轴范围 + 单位 -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:layout_marginTop="8dp">
+        android:layout_marginTop="4dp">
 
         <TextView
             android:layout_width="wrap_content"
@@ -70,12 +70,62 @@
             android:padding="4dp"
             android:background="@android:drawable/edit_text" />
 
+        <Spinner
+            android:id="@+id/spinnerXUnit"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:layout_marginStart="4dp" />
+    </LinearLayout>
+
+    <!-- Y轴范围 + 单位 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginTop="4dp">
+
         <TextView
-            android:id="@+id/tvUnit"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Torr"
+            android:text="@string/label_y_axis"
             android:textSize="12sp" />
+
+        <EditText
+            android:id="@+id/etSpeedMin"
+            android:layout_width="0dp"
+            android:layout_height="36dp"
+            android:layout_weight="1"
+            android:hint="@string/hint_speed_min"
+            android:inputType="numberDecimal"
+            android:textSize="12sp"
+            android:layout_marginStart="4dp"
+            android:padding="4dp"
+            android:background="@android:drawable/edit_text" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=" - "
+            android:textSize="12sp" />
+
+        <EditText
+            android:id="@+id/etSpeedMax"
+            android:layout_width="0dp"
+            android:layout_height="36dp"
+            android:layout_weight="1"
+            android:hint="@string/hint_speed_max"
+            android:inputType="numberDecimal"
+            android:textSize="12sp"
+            android:layout_marginStart="4dp"
+            android:padding="4dp"
+            android:background="@android:drawable/edit_text" />
+
+        <Spinner
+            android:id="@+id/spinnerYUnit"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:layout_marginStart="4dp" />
     </LinearLayout>
 
     <!-- 对数坐标开关 -->
@@ -107,6 +157,32 @@
             android:textSize="11sp" />
     </LinearLayout>
 
+    <!-- 搜索框 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginTop="4dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/label_search"
+            android:textSize="12sp" />
+
+        <EditText
+            android:id="@+id/etSearch"
+            android:layout_width="0dp"
+            android:layout_height="36dp"
+            android:layout_weight="1"
+            android:hint="@string/hint_search_model"
+            android:textSize="12sp"
+            android:layout_marginStart="4dp"
+            android:padding="4dp"
+            android:background="@android:drawable/edit_text" />
+    </LinearLayout>
+
     <!-- 泵型号选择区域 -->
     <TextView
         android:layout_width="wrap_content"
@@ -114,7 +190,7 @@
         android:text="@string/title_pump_models"
         android:textSize="12sp"
         android:textStyle="bold"
-        android:layout_marginTop="8dp" />
+        android:layout_marginTop="4dp" />
 
     <ScrollView
         android:layout_width="match_parent"
@@ -135,7 +211,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:layout_marginTop="8dp" />
+        android:layout_marginTop="4dp" />
 
     <!-- 操作按钮 -->
     <LinearLayout
@@ -143,7 +219,7 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="4dp"
         android:layout_marginBottom="4dp">
 
         <Button
