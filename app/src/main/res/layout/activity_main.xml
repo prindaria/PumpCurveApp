@@ -46,7 +46,7 @@
             android:layout_height="36dp"
             android:layout_weight="1"
             android:hint="@string/hint_pressure_min"
-            android:inputType="numberDecimal"
+            android:inputType="numberDecimal|numberSigned"
             android:textSize="12sp"
             android:layout_marginStart="4dp"
             android:padding="4dp"
@@ -64,7 +64,7 @@
             android:layout_height="36dp"
             android:layout_weight="1"
             android:hint="@string/hint_pressure_max"
-            android:inputType="numberDecimal"
+            android:inputType="numberDecimal|numberSigned"
             android:textSize="12sp"
             android:layout_marginStart="4dp"
             android:padding="4dp"
@@ -97,7 +97,7 @@
             android:layout_height="36dp"
             android:layout_weight="1"
             android:hint="@string/hint_speed_min"
-            android:inputType="numberDecimal"
+            android:inputType="numberDecimal|numberSigned"
             android:textSize="12sp"
             android:layout_marginStart="4dp"
             android:padding="4dp"
@@ -115,7 +115,7 @@
             android:layout_height="36dp"
             android:layout_weight="1"
             android:hint="@string/hint_speed_max"
-            android:inputType="numberDecimal"
+            android:inputType="numberDecimal|numberSigned"
             android:textSize="12sp"
             android:layout_marginStart="4dp"
             android:padding="4dp"
@@ -146,15 +146,17 @@
             android:id="@+id/cbLogX"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="X轴"
-            android:textSize="11sp" />
+            android:text="X对数"
+            android:textSize="11sp"
+            android:checked="true" />
 
         <CheckBox
             android:id="@+id/cbLogY"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Y轴"
-            android:textSize="11sp" />
+            android:text="Y对数"
+            android:textSize="11sp"
+            android:checked="true" />
     </LinearLayout>
 
     <!-- 搜索框 -->
@@ -205,6 +207,19 @@
             android:orientation="vertical" />
     </ScrollView>
 
+    <!-- 触摸坐标显示（新增） -->
+    <TextView
+        android:id="@+id/tvTouchInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="12sp"
+        android:textColor="#0066CC"
+        android:padding="4dp"
+        android:gravity="center"
+        android:background="#E8F4FF"
+        android:visibility="gone" />
+
     <!-- 图表区域 -->
     <com.github.mikephil.charting.charts.LineChart
         android:id="@+id/chart"
@@ -221,6 +236,14 @@
         android:gravity="center"
         android:layout_marginTop="4dp"
         android:layout_marginBottom="4dp">
+
+        <Button
+            android:id="@+id/btnConfirm"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_confirm"
+            android:textSize="12sp"
+            android:layout_marginEnd="8dp" />
 
         <Button
             android:id="@+id/btnPlot"

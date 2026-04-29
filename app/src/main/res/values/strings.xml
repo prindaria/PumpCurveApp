@@ -3,16 +3,17 @@
     <string name="app_name">真空泵抽速曲线</string>
     <string name="title_pump_models">泵型号选择</string>
     <string name="btn_plot">绘制曲线</string>
-    <string name="btn_clear">清空</string>
+    <string name="btn_clear">清除</string>
     <string name="btn_export">导出图片</string>
-    <string name="label_x_axis">X轴范围 (压力)</string>
-    <string name="label_y_axis">Y轴范围 (抽速)</string>
+    <string name="btn_confirm">确认</string>
+    <string name="label_x_axis">X轴范围(压力)</string>
+    <string name="label_y_axis">Y轴范围(抽速)</string>
     <string name="label_log">对数坐标</string>
     <string name="label_search">搜索</string>
     <string name="hint_pressure_min">最小</string>
     <string name="hint_pressure_max">最大</string>
     <string name="hint_speed_min">最小</string>
     <string name="hint_speed_max">最大</string>
-    <string name="hint_search_model">输入关键词搜索型号...</string>
+    <string name="hint_search_model">输入关键字搜索型号...</string>
     <string name="label_data_info">数据信息</string>
 </resources>
