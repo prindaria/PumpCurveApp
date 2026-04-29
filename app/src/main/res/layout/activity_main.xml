@@ -1,133 +1,173 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="horizontal"
+    android:orientation="vertical"
     android:padding="8dp">
 
-    <!-- 左侧：泵型号多选面板 -->
+    <!-- 标题 -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/app_name"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:layout_gravity="center"
+        android:layout_marginBottom="8dp" />
+
+    <!-- 数据信息 -->
+    <TextView
+        android:id="@+id/tvDataInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/label_data_info"
+        android:textSize="12sp"
+        android:padding="4dp"
+        android:background="#F0F0F0" />
+
+    <!-- X轴范围设置 -->
     <LinearLayout
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="3"
-        android:orientation="vertical"
-        android:layout_marginEnd="8dp">
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginTop="8dp">
 
         <TextView
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/title_pump_models"
-            android:textStyle="bold"
-            android:padding="4dp"/>
+            android:text="@string/label_x_axis"
+            android:textSize="12sp" />
 
-        <ScrollView
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1">
-            <LinearLayout
-                android:id="@+id/checkBoxContainer"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="4dp"/>
-        </ScrollView>
+        <EditText
+            android:id="@+id/etPressureMin"
+            android:layout_width="0dp"
+            android:layout_height="36dp"
+            android:layout_weight="1"
+            android:hint="@string/hint_pressure_min"
+            android:inputType="numberDecimal"
+            android:textSize="12sp"
+            android:layout_marginStart="4dp"
+            android:padding="4dp"
+            android:background="@android:drawable/edit_text" />
 
-        <!-- 数据信息 -->
         <TextView
-            android:id="@+id/textDataInfo"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/label_data_info"
-            android:textSize="10sp"
-            android:padding="4dp"/>
+            android:text=" - "
+            android:textSize="12sp" />
+
+        <EditText
+            android:id="@+id/etPressureMax"
+            android:layout_width="0dp"
+            android:layout_height="36dp"
+            android:layout_weight="1"
+            android:hint="@string/hint_pressure_max"
+            android:inputType="numberDecimal"
+            android:textSize="12sp"
+            android:layout_marginStart="4dp"
+            android:padding="4dp"
+            android:background="@android:drawable/edit_text" />
+
+        <TextView
+            android:id="@+id/tvUnit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Torr"
+            android:textSize="12sp" />
     </LinearLayout>
 
-    <!-- 右侧：图表 + 控制面板 -->
+    <!-- 对数坐标开关 -->
     <LinearLayout
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="7"
-        android:orientation="vertical">
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginTop="4dp">
 
-        <!-- 控制面板 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/label_log"
+            android:textSize="12sp" />
+
+        <CheckBox
+            android:id="@+id/cbLogX"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="X轴"
+            android:textSize="11sp" />
+
+        <CheckBox
+            android:id="@+id/cbLogY"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Y轴"
+            android:textSize="11sp" />
+    </LinearLayout>
+
+    <!-- 泵型号选择区域 -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/title_pump_models"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:layout_marginTop="8dp" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        android:background="#FAFAFA"
+        android:padding="4dp">
+
         <LinearLayout
+            android:id="@+id/pumpSelectionContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:padding="4dp">
+            android:orientation="vertical" />
+    </ScrollView>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/label_x_axis"
-                android:textSize="12sp"/>
+    <!-- 图表区域 -->
+    <com.github.mikephil.charting.charts.LineChart
+        android:id="@+id/chart"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="8dp" />
 
-            <EditText
-                android:id="@+id/editPressureMin"
-                android:layout_width="80dp"
-                android:layout_height="wrap_content"
-                android:hint="@string/hint_pressure_min"
-                android:inputType="numberDecimal"
-                android:textSize="12sp"/>
+    <!-- 操作按钮 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="4dp">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="~"
-                android:textSize="12sp"/>
+        <Button
+            android:id="@+id/btnPlot"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_plot"
+            android:textSize="12sp"
+            android:layout_marginEnd="8dp" />
 
-            <EditText
-                android:id="@+id/editPressureMax"
-                android:layout_width="80dp"
-                android:layout_height="wrap_content"
-                android:hint="@string/hint_pressure_max"
-                android:inputType="numberDecimal"
-                android:textSize="12sp"/>
+        <Button
+            android:id="@+id/btnClear"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_clear"
+            android:textSize="12sp"
+            android:layout_marginEnd="8dp" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Torr"
-                android:textSize="12sp"
-                android:layout_marginStart="4dp"/>
-
-            <CheckBox
-                android:id="@+id/checkLogX"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/label_log"
-                android:textSize="12sp"
-                android:checked="true"/>
-
-            <Button
-                android:id="@+id/btnPlot"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/btn_plot"
-                android:textSize="12sp"/>
-
-            <Button
-                android:id="@+id/btnClear"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/btn_clear"
-                android:textSize="12sp"/>
-
-            <Button
-                android:id="@+id/btnExport"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/btn_export"
-                android:textSize="12sp"/>
-        </LinearLayout>
-
-        <!-- 图表区域 -->
-        <com.github.mikephil.charting.charts.LineChart
-            android:id="@+id/lineChart"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"/>
+        <Button
+            android:id="@+id/btnExport"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_export"
+            android:textSize="12sp" />
     </LinearLayout>
 
 </LinearLayout>
