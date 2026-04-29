@@ -133,6 +133,7 @@ class MainActivity : AppCompatActivity() {
         spinnerXUnit.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
                 currentXUnit = PressureUnit.values()[position]
+                if (chart.data != null && chart.data!!.dataSetCount > 0) updateAxisLabels()
             }
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
@@ -143,6 +144,7 @@ class MainActivity : AppCompatActivity() {
         spinnerYUnit.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
                 currentYUnit = SpeedUnit.values()[position]
+                if (chart.data != null && chart.data!!.dataSetCount > 0) updateAxisLabels()
             }
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
@@ -431,42 +433,36 @@ class MainActivity : AppCompatActivity() {
         val useLogX = cbLogX.isChecked
         val useLogY = cbLogY.isChecked
 
-        // X轴标签：对数坐标显示实际值
+        // X轴标签
         if (useLogX) {
             chart.xAxis.valueFormatter = object : ValueFormatter() {
                 override fun getAxisLabel(value: Float, axis: AxisBase?): String {
-                    val original = 10.0.pow(value.toDouble())
-                    // 转换回显示单位
-                    val displayValue = original * currentXUnit.toTorr
+                    // value 是 log10(显示值)，转回显示值
+                    val displayValue = 10.0.pow(value.toDouble())
                     return formatNumber(displayValue)
                 }
             }
         } else {
             chart.xAxis.valueFormatter = object : ValueFormatter() {
                 override fun getAxisLabel(value: Float, axis: AxisBase?): String {
-                    // 转换回显示单位
-                    val displayValue = value.toDouble() * currentXUnit.toTorr
-                    return formatNumber(displayValue)
+                    // value 已经是显示单位，不需要转换
+                    return formatNumber(value.toDouble())
                 }
             }
         }
 
-        // Y轴标签：对数坐标显示实际值
+        // Y轴标签
         if (useLogY) {
             chart.axisLeft.valueFormatter = object : ValueFormatter() {
                 override fun getAxisLabel(value: Float, axis: AxisBase?): String {
-                    val original = 10.0.pow(value.toDouble())
-                    // 转换回显示单位
-                    val displayValue = original * currentYUnit.toLmin
+                    val displayValue = 10.0.pow(value.toDouble())
                     return formatNumber(displayValue)
                 }
             }
         } else {
             chart.axisLeft.valueFormatter = object : ValueFormatter() {
                 override fun getAxisLabel(value: Float, axis: AxisBase?): String {
-                    // 转换回显示单位
-                    val displayValue = value.toDouble() * currentYUnit.toLmin
-                    return formatNumber(displayValue)
+                    return formatNumber(value.toDouble())
                 }
             }
         }
