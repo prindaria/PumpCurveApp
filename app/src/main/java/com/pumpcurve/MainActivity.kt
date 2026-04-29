@@ -45,21 +45,19 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvTouchInfo: TextView  // 触摸坐标显示
     private lateinit var btnConfirm: Button    // 确认按钮
 
-    // 压力单位
-    // 1 Torr = 133.322 Pa = 1.33322 mbar
+    // 压力单位，基准: 760 Torr = 101325 Pa
     // toTorr: 1个该单位 = toTorr Torr
     enum class PressureUnit(val displayName: String, val toTorr: Double) {
-        TORR("Torr", 1.0),              // 1 Torr = 1 Torr
-        PA("Pa", 1.0 / 133.322),        // 1 Pa = 1/133.322 Torr (1 Torr = 133.322 Pa)
-        MBAR("mbar", 1.0 / 1.33322)     // 1 mbar = 1/1.33322 Torr (1 Torr = 1.33322 mbar)
+        TORR("Torr", 1.0),                    // 1 Torr = 1 Torr
+        PA("Pa", 760.0 / 101325.0)            // 1 Pa = 760/101325 Torr (760 Torr = 101325 Pa)
     }
 
     // 速度单位
-    // 6 m³/h = 100 L/min → 1 m³/h = 100/6 ≈ 16.67 L/min
+    // 1 m³ = 1000 L, 1 h = 60 min → 1 m³/h = 1000/60 L/min
     // toLmin: 1个该单位 = toLmin L/min
     enum class SpeedUnit(val displayName: String, val toLmin: Double) {
-        LMIN("L/min", 1.0),             // 1 L/min = 1 L/min
-        M3H("m³/h", 100.0 / 6.0)        // 6 m³/h = 100 L/min → 1 m³/h = 100/6 L/min
+        LMIN("L/min", 1.0),                    // 1 L/min = 1 L/min
+        M3H("m³/h", 1000.0 / 60.0)              // 1 m³/h = 1000/60 L/min
     }
 
     // 数据结构：Map<泵型号, List<数据点>>
@@ -213,9 +211,9 @@ class MainActivity : AppCompatActivity() {
                     val actualX = if (useLogX) 10.0.pow(xValue.toDouble()) else xValue.toDouble()
                     val actualY = if (useLogY) 10.0.pow(yValue.toDouble()) else yValue.toDouble()
                     
-                    // 转换单位显示
-                    val displayX = actualX * currentXUnit.toTorr
-                    val displayY = actualY * currentYUnit.toLmin
+                    // 转换为显示单位：Torr / toTorr = 显示值
+                    val displayX = actualX / currentXUnit.toTorr
+                    val displayY = actualY / currentYUnit.toLmin
                     
                     val xUnit = currentXUnit.displayName
                     val yUnit = currentYUnit.displayName
